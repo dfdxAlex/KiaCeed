@@ -8,10 +8,10 @@ bool high_freq = false; // default false, If using a high freq CPU > ~100 MHZ se
 
 TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM, high_freq);
 
-unsigned long tChardge = 36000000; // длина времени зарядки
+unsigned long tChardge = 36000000;   // длина времени зарядки
 unsigned long tWork = 3*3600000;     // длина времени разрядки
-// unsigned long tChardge = 10000; // длина времени зарядки
-// unsigned long tWork = 5000;     // длина времени разрядки
+// unsigned long tChardge = 10000;   // длина времени зарядки
+// unsigned long tWork = 5000;       // длина времени разрядки
 unsigned long timeAccumulator = 0;   // аккумулятор хранит число милиссекунд от последнего изменения состояния зарядка/разрядка аккумулятора
 
 bool chardgeRightNow = false; // показывает идёт ли зарядка прямо сейчас
@@ -135,16 +135,19 @@ bool treningAKB()
       if (digitalRead(LED_BUILTIN) == LOW) 
          chardgeRightNow = false;
 
-      if (timeAccumulator > tWork)          // Если превышено время разрядки
-          if (digitalRead(LED_BUILTIN) != HIGH) {
-              digitalWrite(LED_BUILTIN, HIGH); // Разрядка акамулятора
-              timeAccumulator = 0;             // Если перешли в режим зарядки, то обновить аккумулятор
+      // Режим заряд/разряд по времени
+      if (timeAccumulator > tWork)                     // Если превышено время разрядки
+          if (digitalRead(LED_BUILTIN) != HIGH) {      // Если ещё не включили разрядку
+              digitalWrite(LED_BUILTIN, HIGH);         // Включить разрядку
+              timeAccumulator = 0;                     // Обнулить аккумулятор
           }
-      if (timeAccumulator > tChardge)          // Если превышено время зарядки
-          if (digitalRead(LED_BUILTIN) != LOW) {
-              digitalWrite(LED_BUILTIN, LOW);  // Зарядка акамулятора
-              timeAccumulator = 0;             // Если перешли в режим разрядки, то обновить аккумулятор
+      if (timeAccumulator > tChardge)                  // Если превышено время зарядки
+          if (digitalRead(LED_BUILTIN) != LOW) {       // Если ещё не включена зарядка
+              digitalWrite(LED_BUILTIN, LOW);          // Включить зарядку
+              timeAccumulator = 0;                     // Обнулить аккумулятор
           }
+
+    // Режим заряд/разряд по уровням напряжения
   } else if (buttonArray[3]) {  // Если включена умная тренировка hightChardg
       // Проверить массив, он должен быть заполнен
 
@@ -160,12 +163,12 @@ bool treningAKB()
         }
           delay(10);
       }
+
       // Если аккумулятор разрядка
       if (digitalRead(LED_BUILTIN) == HIGH) {
           if (analogRead(A0) < lowChardg) {
               digitalWrite(LED_BUILTIN, LOW);
               chardgeRightNow = true;
-
               delay(100);
           }
       }
@@ -252,21 +255,22 @@ void buttonSearch(uint8_t buttons)
 } // end function
 
 // функция переводит секунды в нормальный вид: часы:минуты
+// https://github.com/dfdxAlex/KiaCeed.git
 void displayTimeFromMillis(unsigned long ms) {
-  unsigned long totalSeconds = ms / 1000;
-  uint8_t seconds = totalSeconds % 60;
-  uint8_t minutes = (totalSeconds / 60) % 60;
-  uint16_t hours   = (totalSeconds / 3600);  // теперь до 65535 часов (если нужно)
+  unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
+  uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд
+  uint8_t minutes = (totalSeconds / 60) % 60;   // Посчитать число минут
+  uint16_t hours   = (totalSeconds / 3600);     // Посчитать число часов
 
   // Ограничим отображение максимумом 2 цифр:
-  if (hours > 99) hours = 99;
+  if (hours > 99) hours = 99;                   // Максимальное число часов 99
 
-  tm.displayASCII(0, '0' + hours / 10);
-  tm.displayASCIIwDot(1, '0' + hours % 10);
-  tm.displayASCII(2, '0' + minutes / 10);
-  tm.displayASCIIwDot(3, '0' + minutes % 10);
-  tm.displayASCII(4, '0' + seconds / 10);
-  tm.displayASCII(5, '0' + seconds % 10);
-  tm.displayASCII(6, ' ');
-  tm.displayASCII(7, ' ');
+  tm.displayASCII(0, '0' + hours / 10);         // Функция требует символ для вывода в нулевую позицию. Нужно вывести цифру. Берем символ 0 равный 48 и к нему добавляем число часов, так получаем символ нужной цифры
+  tm.displayASCIIwDot(1, '0' + hours % 10);     // То же самое что и выше но с точкой
+  tm.displayASCII(2, '0' + minutes / 10);       // Описание вначале этого блока
+  tm.displayASCIIwDot(3, '0' + minutes % 10);   // То же самое что и выше но с точкой
+  tm.displayASCII(4, '0' + seconds / 10);       // Описание вначале этого блока
+  tm.displayASCII(5, '0' + seconds % 10);       // Описание вначале этого блока
+  tm.displayASCII(6, ' ');                      // Пустой символ
+  tm.displayASCII(7, ' ');                      // Пустой символ
 }

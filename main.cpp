@@ -14,7 +14,14 @@ unsigned long tWork = 3*3600000;     // длина времени разрядк
 // unsigned long tWork = 5000;       // длина времени разрядки
 unsigned long timeAccumulator = 0;   // аккумулятор хранит число милиссекунд от последнего изменения состояния зарядка/разрядка аккумулятора
 
-bool chardgeRightNow = false; // показывает идёт ли зарядка прямо сейчас
+bool chardgeRightNow = false;                    // показывает идёт ли зарядка прямо сейчас
+// unsigned long propertyTimeForOutInformation = 0; // Переменная хранит время в милисекундах от старта ардуино, для функции вывода информации с задержкой, чтобы не было вывода нескольких строк и они не сливались
+char* outString = "        "; // Переменная хранит в себе текст, который нужно вывести;
+unsigned long outLong;        // Переменная хранит в себе цифру, который нужно вывести;
+bool outTextOrInteger;        // Переменная хранит в себе информацию о том, какой последний вывод должен был бы быть. Если программа последним выводом хотела вывести цифру, то true, если текст, то false
+bool propertyDisplayTimeFromMillis = false; // Специальная переменная для функции показа времени на индикаторе. 
+                                            // Если последнее событие - это попытка вывести именно эту функцию, то всё остальное не выводится. 
+                                            // Издержки отсутствия проекта)), на самом деле пригодилось просто третье состояние.
 
 // Хранит состояния нажатых кнопок на мониторе
 bool buttonArray[8] = {false, false, false, false, false, false, false, false};
@@ -72,8 +79,11 @@ void loop() {
     // Функция задает время зарядки акб для режима 1
     setTimeChardge();
 
-    delay(10);
+    // delay(10);
     timeAccumulator += millis() - milisek; // Аккумулятор времени, для цикла зарядки-разрядки аккумулятора
+
+    // Функция выводит данные в индикатор из глобальной переменной и должна запускаться в конце программы.
+    outInformationWithPause();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,11 +179,17 @@ bool treningAKB()
         // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
         if (digitalRead(LED_BUILTIN) == HIGH) {
           if (lockFlagDown > analogRead(A0)) lockFlagDown = analogRead(A0);
-          tm.displayIntNum(lockFlagDown, true, 4);
+        //   tm.displayIntNum(lockFlagDown, true, 4);
+          outLong = lockFlagUp;
+          outTextOrInteger = true;
+          propertyDisplayTimeFromMillis = false;
         }
         if (digitalRead(LED_BUILTIN) == LOW) {
           if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
-          tm.displayIntNum(lockFlagUp, true, 4);
+        //   tm.displayIntNum(lockFlagUp, true, 4);
+          outLong = lockFlagUp;
+          outTextOrInteger = true;
+          propertyDisplayTimeFromMillis = false;
         }
           delay(10);
       }
@@ -198,25 +214,54 @@ bool treningAKB()
 // функция выводит результат на монитор
 bool outputMonitor() 
 {
+    
     // Если нажаты кнопки S1, S2, S3, S4 - это значит что идёт смарт зарядка с включенным монитором процессов
     if (buttonArray[0] && buttonArray[1] && buttonArray[2] && buttonArray[3]) {
         return false;
     }
 
+    // если остаемся внутри функции то объявить внутреннюю переменную для текста
+    // char* outString;
+
     if (buttonArray[5] && !buttonArray[6] && !buttonArray[7]) {
-        tm.displayText("-SETUP- ");
+        // tm.displayText("-SETUP- ");
+        outString = "-SETUP- ";
+        outTextOrInteger = false;
+        propertyDisplayTimeFromMillis = false;
         return false;
     }
 
     // if (buttonArray[5] || buttonArray[6] || buttonArray[7]) {
     if (buttonArray[0]) {
-        if (chardgeRightNow == true)
-            tm.displayText("C-UP    ");
-        else 
-            tm.displayText("C-DontUP");
+        if (chardgeRightNow == true) {
+            // tm.displayText("C-UP    ");
+            outString = "C-UP    ";
+            outTextOrInteger = false;
+            propertyDisplayTimeFromMillis = false;
         }
-
+        else {
+            // tm.displayText("C-DontUP");
+            outString = "C-DontUP";
+            outTextOrInteger = false;
+            propertyDisplayTimeFromMillis = false;
+        }
+    }
+    // tm.displayText(outString);
     return false;
+}
+
+// Чтобы данная функция выводила свои глобальные переменные, нужно сделать propertyDisplayTimeFromMillis = false;
+// Если нужно заблокировать вывод с помощью этой функции, то propertyDisplayTimeFromMillis = true;
+void outInformationWithPause()
+{
+    // Эта переменная если true, значит что всё-таки пришлось выводить данные другой функцией, не этой
+    if (propertyDisplayTimeFromMillis) return;
+    // propertyTimeForOutInformation
+    if (!outTextOrInteger)
+        tm.displayText(outString);
+    if (outTextOrInteger)
+        tm.displayIntNum(outLong, true, 4);
+    delay(100);
 }
 
 // Показывает заданные значения заряда-разряда
@@ -225,12 +270,14 @@ bool viewTimeChardge()
     // Показать заданное время разряда
     if (buttonArray[7] == true && buttonArray[6] == true  && buttonArray[5] != true) {
         displayTimeFromMillis(timeLastDisChardge);
+        // propertyDisplayTimeFromMillis = true;
         return true;
     }
 
     // показать заданное время заряда
     if (buttonArray[7] && buttonArray[6]  && buttonArray[5]) {
         displayTimeFromMillis(timeLastChardge);
+        // propertyDisplayTimeFromMillis = true;
         return true;
     }
 
@@ -274,6 +321,9 @@ void buttonSearch()
 // функция переводит секунды в нормальный вид: часы:минуты
 // https://github.com/dfdxAlex/KiaCeed.git
 void displayTimeFromMillis(unsigned long ms) {
+  // Заблокировать вывод информации с помощью функции void outInformationWithPause()
+  propertyDisplayTimeFromMillis = true;
+
   unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
   uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд
   uint8_t minutes = (totalSeconds / 60) % 60;   // Посчитать число минут
@@ -297,7 +347,7 @@ void welcome(char tik, int propertyForDelay)
 {
         for (char i=2; i<tik; i++) {
         if (i % 2 == 0)
-            tm.displayText("V-1.1   ");
+            tm.displayText("V-1.2   ");
         else
             tm.displayText("READY   ");
         delay(propertyForDelay);

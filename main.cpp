@@ -47,17 +47,14 @@ void setup() {
 
     tm.setLED(0, false);
 
-    for (char i=2; i<20; i++) {
-        if (i % 2 == 0)
-            tm.displayText("V-1.0   ");
-        else
-            tm.displayText("READY   ");
-        delay(800);
-    }
+    welcome(10, 800);
+
 }
 
 void loop() {
     
+    
+
     unsigned long milisek = millis(); // Запоминает число миллисекунд нп новом цыкле для аккумулятора
 
     treningAKB();
@@ -211,7 +208,8 @@ bool outputMonitor()
         return false;
     }
 
-    if (buttonArray[5] || buttonArray[6] || buttonArray[7]) {
+    // if (buttonArray[5] || buttonArray[6] || buttonArray[7]) {
+    if (buttonArray[0]) {
         if (chardgeRightNow == true)
             tm.displayText("C-UP    ");
         else 
@@ -292,4 +290,16 @@ void displayTimeFromMillis(unsigned long ms) {
   tm.displayASCII(5, '0' + seconds % 10);       // Описание вначале этого блока
   tm.displayASCII(6, ' ');                      // Пустой символ
   tm.displayASCII(7, ' ');                      // Пустой символ
+}
+
+// Функция запускается при старте чтобы показать модификацию программы и нагнать понтов.
+void welcome(char tik, int propertyForDelay)
+{
+        for (char i=2; i<tik; i++) {
+        if (i % 2 == 0)
+            tm.displayText("V-1.1   ");
+        else
+            tm.displayText("READY   ");
+        delay(propertyForDelay);
+    }
 }

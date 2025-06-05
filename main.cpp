@@ -46,6 +46,14 @@ void setup() {
     tm.displayBegin(); 
 
     tm.setLED(0, false);
+
+    for (char i=2; i<20; i++) {
+        if (i % 2 == 0)
+            tm.displayText("V-1.0   ");
+        else
+            tm.displayText("READY   ");
+        delay(800);
+    }
 }
 
 void loop() {
@@ -58,8 +66,8 @@ void loop() {
     
     // outputMonitor();
 
-    uint8_t buttons = tm.readButtons();
-    buttonSearch(buttons); // проверяет кнопки и записывает нажатые в переменные
+    //uint8_t buttons = tm.readButtons();
+    buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
 
     // Если есть условия то показать время заряда либо разряда
     if (!viewTimeChardge()) outputMonitor();
@@ -79,28 +87,37 @@ void loop() {
 // Функция изменяет время зарядки для режима 1
 void setTimeChardge()
 {
+    // Если одна из кнопок не нажата, значит выходим, решим настроек времени заряда или разряда не активирован
     if (buttonArray[7] != true || buttonArray[6] != true) return false;
 
-    // Если обе кнопки вверх таймер и вних таймер выключены, то обнулить шаг декремента и инкремента
-    if (buttonArray[1] == !true && buttonArray[2] == !true) stepIncrementDecrementTimeChardge = 1000;
-    else stepIncrementDecrementTimeChardge+=10;
+    // Если отключены обе кнопки прокрутки таймера вверх-вниз отпущены, то обнулить переменную скорости прокрутки
+    if (buttonArray[1] == !true && buttonArray[2] == !true) { 
+        stepIncrementDecrementTimeChardge = 1000;
+    } // Если одна из кнопок включена, то продолжается процесс увеличения скорости прокрутки настроек
+    else {
+             stepIncrementDecrementTimeChardge+=10;
+         }
+
+    // Если нажата кнопка 5(№6) - это означает что активирован режим изменения переменных зарядки по времени
     if (buttonArray[5] == true) {
+        // Если включена кнопка 1(№2), то увеличиваем время зарядки на величину шага (скорости) время зарядки плюс шаг должно быть меньше 180000000 миллисекунд
         if (buttonArray[1] == true && (tChardge + stepIncrementDecrementTimeChardge) < 180000000) {
             tChardge+=stepIncrementDecrementTimeChardge;
         }
+        // Если нажата кнопка 2(№3), то уменьшаем время зарядки на величину шага (скорости) - время зарядки плюс шаг должно быть больше минуты
         if (buttonArray[2] == true && (tChardge + stepIncrementDecrementTimeChardge) > 60000) {
             tChardge-=stepIncrementDecrementTimeChardge;
         }
-    }
-
-    if (buttonArray[5] != true) {
-        if (buttonArray[1] == true && (tWork + + stepIncrementDecrementTimeChardge) < 180000000) {
-            tWork+=stepIncrementDecrementTimeChardge;
-        }
-        if (buttonArray[2] == true && (tWork + stepIncrementDecrementTimeChardge) > 60000) {
-            tWork-=stepIncrementDecrementTimeChardge;
-        }
-    }
+    } else  {
+                //Если включена кнопка 1(№2), то увеличиваем время разрядки на величину шага (скорости) время разрядки плюс шаг должно быть меньше 180000000 миллисекунд
+                if (buttonArray[1] == true && (tWork + stepIncrementDecrementTimeChardge) < 180000000) {
+                    tWork+=stepIncrementDecrementTimeChardge;
+                }
+                // Если нажата кнопка 2(№3), то уменьшаем время разрядки на величину шага (скорости) - время разрядки плюс шаг должно быть больше минуты
+                if (buttonArray[2] == true && (tWork + stepIncrementDecrementTimeChardge) > 60000) {
+                    tWork-=stepIncrementDecrementTimeChardge;
+                }
+            }
     delay(10);
 }
 
@@ -189,37 +206,33 @@ bool outputMonitor()
         return false;
     }
 
-    if (chardgeRightNow == true)
-        tm.displayText("C-UP    ");
-    else 
-        tm.displayText("C-DontUP");
+    if (buttonArray[5] && !buttonArray[6] && !buttonArray[7]) {
+        tm.displayText("-SETUP- ");
+        return false;
+    }
+
+    if (buttonArray[5] || buttonArray[6] || buttonArray[7]) {
+        if (chardgeRightNow == true)
+            tm.displayText("C-UP    ");
+        else 
+            tm.displayText("C-DontUP");
+        }
 
     return false;
 }
 
-// Показывает значения времени последнего заряда-разряда
+// Показывает заданные значения заряда-разряда
 bool viewTimeChardge()
 {
-    // Показать заданное время разряда и задать режим программирования этого времени
+    // Показать заданное время разряда
     if (buttonArray[7] == true && buttonArray[6] == true  && buttonArray[5] != true) {
         displayTimeFromMillis(timeLastDisChardge);
         return true;
     }
-    // Показать заданное время заряда и задать режим программирования этого времени
-    if (buttonArray[7] == true && buttonArray[6] == true  && buttonArray[5] == true) {
-        displayTimeFromMillis(timeLastChardge);
-        return true;
-    }
 
     // показать заданное время заряда
-    if (buttonArray[7] == false && buttonArray[6] == true) {
+    if (buttonArray[7] && buttonArray[6]  && buttonArray[5]) {
         displayTimeFromMillis(timeLastChardge);
-        return true;
-    }
-
-    // показать заданное время разряда
-    if (buttonArray[6] == false && buttonArray[7] == true) {
-        displayTimeFromMillis(timeLastDisChardge);
         return true;
     }
 
@@ -238,14 +251,15 @@ bool viewTimeChardge()
 // Функция опрашивает состояние кнопок и присваивает труе соотвттвующему индексу в массиве buttonArray[]
 // Массив buttonPushArray[] служебный, для избавления от эффекта многократного изменения состояния кнопки при удержании ее. 
 // Благодаря этому массиву состояние кнопки изменится после отпускания кнопки. То есть одно нажатие - одно изменение состояния кнопки сколько бы не держали кнопку нажатой.
-void buttonSearch(uint8_t buttons)
+void buttonSearch()
 {
+    uint8_t buttons = tm.readButtons();
     for (char i = 0; i < 8; i++) {
         if (!buttonPushArray[i] && (buttons & (1 << i)) ) {
                 buttonArray[i] = !buttonArray[i];
                 tm.setLED(i, buttonArray[i]);
                 buttonPushArray[i] = true;
-        } //end if (!buttonPushArray[i])
+        }
         // Здесь проверить отпущена ли кнопка, которая проверяется на текущей итерации цикла. 
         // button - это маска показывающая какие кнопки включены а какие выключены.
         if (!(buttons & (1 << i))) {
@@ -253,6 +267,11 @@ void buttonSearch(uint8_t buttons)
         }
     } // end for
 } // end function
+
+// uint8_t bubuttonSearchInt()
+// {
+//     return false;
+// }
 
 // функция переводит секунды в нормальный вид: часы:минуты
 // https://github.com/dfdxAlex/KiaCeed.git

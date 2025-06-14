@@ -3,6 +3,7 @@
 
 #include "welcome.h"
 #include "infoChardge.h"
+#include "displayTimeFromMillis.h"
 
 #define  STROBE_TM 10 // strobe = GPIO connected to strobe line of module
 #define  CLOCK_TM 11  // clock = GPIO connected to clock line of module
@@ -245,13 +246,13 @@ bool viewTimeChardge()
 {
     // Показать заданное время разряда
     if (requestButtonEnd(0b10000000) || requestButtonEnd(0b10010000)  || requestButtonEnd(0b10010010)  || requestButtonEnd(0b10010100)) {
-        displayTimeFromMillis(tWork);
+        displayTimeFromMillis(outString, tWork);
         return true;
     }
 
     // показать заданное время заряда
     if (requestButtonEnd(0b01000000) || requestButtonEnd(0b01010000) || requestButtonEnd(0b01010010) || requestButtonEnd(0b01010100)) {
-        displayTimeFromMillis(tChardge);
+        displayTimeFromMillis(outString, tChardge);
         return true;
     }
 
@@ -353,18 +354,18 @@ else
     return (requiredArrayMask & maskToCheck) == 0;
 }
 
-// функция переводит секунды в нормальный вид: часы:минуты
-// https://github.com/dfdxAlex/KiaCeed.git
-// https://youtu.be/u3vY8uXiEkI
-void displayTimeFromMillis(unsigned long ms) {
+// // функция переводит секунды в нормальный вид: часы:минуты
+// // https://github.com/dfdxAlex/KiaCeed.git
+// // https://youtu.be/u3vY8uXiEkI
+// void displayTimeFromMillis(unsigned long ms) {
 
-  unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
-  uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд
-  uint8_t minutes = (totalSeconds / 60) % 60;   // Посчитать число минут
-  uint16_t hours   = (totalSeconds / 3600);     // Посчитать число часов
+//   unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
+//   uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд
+//   uint8_t minutes = (totalSeconds / 60) % 60;   // Посчитать число минут
+//   uint16_t hours   = (totalSeconds / 3600);     // Посчитать число часов
 
-  // Ограничим отображение максимумом 2 цифр:
-  if (hours > 99) hours = 99;                   // Максимальное число часов 99
+//   // Ограничим отображение максимумом 2 цифр:
+//   if (hours > 99) hours = 99;                   // Максимальное число часов 99
 
-sprintf(outString, "%02d.%02d.%02d  ", hours, minutes, seconds);
-}
+// sprintf(outString, "%02d.%02d.%02d  ", hours, minutes, seconds);
+// }

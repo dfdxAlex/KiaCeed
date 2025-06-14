@@ -4,6 +4,7 @@
 #include "welcome.h"
 #include "infoChardge.h"
 #include "displayTimeFromMillis.h"
+#include "buttonSearch.h"
 
 #define  STROBE_TM 10 // strobe = GPIO connected to strobe line of module
 #define  CLOCK_TM 11  // clock = GPIO connected to clock line of module
@@ -67,7 +68,7 @@ void loop() {
 
     infoChardge(chardgeRightNow);
     
-    buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
+    buttonSearch(tm, buttonPushArray, buttonArray); // проверяет кнопки и записывает нажатые в переменные
 
     // Если есть условия то показать время заряда либо разряда
     if (!viewTimeChardge()) {outputMonitor();} //временно закоментировал, чтобы не мешала функция outputMonitor
@@ -133,8 +134,6 @@ void setTimeChardge()
                 }
             }
 }
-
-
 
 // Функция тренирует акб
 bool treningAKB()
@@ -277,95 +276,11 @@ void buttonClosed(uint8_t number)
     tm.setLED(number, 0);
 }
 
-uint8_t buttonSearch()
-{
-    uint8_t buttons = tm.readButtons();
-    for (char i = 0; i < 8; i++) {
-        if (!buttonPushArray[i] && (buttons & (1 << i)) ) {
-                buttonArray[i] = !buttonArray[i];
-                tm.setLED(i, buttonArray[i]);
-                buttonPushArray[i] = true;
-        }
-        // Здесь проверить отпущена ли кнопка, которая проверяется на текущей итерации цикла. 
-        // button - это маска показывающая какие кнопки включены а какие выключены.
-        if (!(buttons & (1 << i))) {
-            buttonPushArray[i] = false;
-        }
-    } 
-
-    // Создать маску из массива с данными об включенных и отключенных кнопках.
-    return (uint8_t(buttonArray[0]) << 0) |
-           (uint8_t(buttonArray[1]) << 1) |
-           (uint8_t(buttonArray[2]) << 2) |
-           (uint8_t(buttonArray[3]) << 3) |
-           (uint8_t(buttonArray[4]) << 4) |
-           (uint8_t(buttonArray[5]) << 5) |
-           (uint8_t(buttonArray[6]) << 6) |
-           (uint8_t(buttonArray[7]) << 7);
-}
-
 // Функция сравнивает заданную комбинацию с реально нажатыми и отжатыми кнопками.
 bool requestButtonEnd(uint8_t maskForRequest)
 {
-    if (maskForRequest == buttonSearch()) 
+    if (maskForRequest == buttonSearch(tm, buttonPushArray, buttonArray)) 
         return true;
     return false;
 }
 
-// Функция сравнивает заданную комбинацию с реально нажатыми кнопками.
-bool requestButtonEndTrueFalse(bool buttonOne,
-                               bool buttonTwo,
-                               bool buttonThree,
-                               bool buttonFour,
-                               bool buttonFive,
-                               bool buttonSix,
-                               bool buttonSeven,
-                               bool buttonEight,
-                               bool trueOrFalse)
-{
-    // Сделать маску из входных параметров, true превращаются в 1 и смещается, потом побитово складываются
-    uint8_t requiredMask = 
-    (uint8_t(buttonOne)   << 0) |
-    (uint8_t(buttonTwo)   << 1) |
-    (uint8_t(buttonThree) << 2) |
-    (uint8_t(buttonFour)  << 3) |
-    (uint8_t(buttonFive)  << 4) |
-    (uint8_t(buttonSix)   << 5) |
-    (uint8_t(buttonSeven) << 6) |
-    (uint8_t(buttonEight) << 7);
-
-        // Сделать маску из входных параметров проинвертированных, false to true превращаются в 1 и смещается, потом побитово складываются
-        uint8_t maskToCheck =
-        (!buttonOne   << 0) |
-        (!buttonTwo   << 1) |
-        (!buttonThree << 2) |
-        (!buttonFour  << 3) |
-        (!buttonFive  << 4) |
-        (!buttonSix   << 5) |
-        (!buttonSeven << 6) |
-        (!buttonEight << 7);
-
-    // Создать маску из массива с данными об включенных и отключенных кнопках.
-    uint8_t requiredArrayMask = buttonSearch();
-
-if (trueOrFalse)
-    return (requiredArrayMask & requiredMask) == requiredMask;
-else 
-    return (requiredArrayMask & maskToCheck) == 0;
-}
-
-// // функция переводит секунды в нормальный вид: часы:минуты
-// // https://github.com/dfdxAlex/KiaCeed.git
-// // https://youtu.be/u3vY8uXiEkI
-// void displayTimeFromMillis(unsigned long ms) {
-
-//   unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
-//   uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд
-//   uint8_t minutes = (totalSeconds / 60) % 60;   // Посчитать число минут
-//   uint16_t hours   = (totalSeconds / 3600);     // Посчитать число часов
-
-//   // Ограничим отображение максимумом 2 цифр:
-//   if (hours > 99) hours = 99;                   // Максимальное число часов 99
-
-// sprintf(outString, "%02d.%02d.%02d  ", hours, minutes, seconds);
-// }

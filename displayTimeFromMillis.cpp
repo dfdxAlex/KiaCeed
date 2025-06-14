@@ -7,8 +7,6 @@
 // https://youtu.be/u3vY8uXiEkI
 void displayTimeFromMillis(char* outString, unsigned long ms) {
 
-//   char* outString = "        ";
-
   unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
   uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд
   uint8_t minutes = (totalSeconds / 60) % 60;   // Посчитать число минут

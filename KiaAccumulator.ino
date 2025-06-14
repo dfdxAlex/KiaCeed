@@ -5,6 +5,7 @@
 #include "infoChardge.h"
 #include "displayTimeFromMillis.h"
 #include "buttonSearch.h"
+#include "requestButtonEnd.h"
 
 #define  STROBE_TM 10 // strobe = GPIO connected to strobe line of module
 #define  CLOCK_TM 11  // clock = GPIO connected to clock line of module
@@ -143,7 +144,7 @@ bool treningAKB()
       return false;
   }
 
-  if (requestButtonEnd(0b00000001)) { // Сюда заходим если нажата только S1
+  if (requestButtonEnd(0b00000001, tm, buttonPushArray, buttonArray, buttonSearch)) { // Сюда заходим если нажата только S1
       if (digitalRead(LED_BUILTIN) == HIGH) 
          chardgeRightNow = true;
       if (digitalRead(LED_BUILTIN) == LOW) 
@@ -168,7 +169,7 @@ bool treningAKB()
   }
   
   // Режим заряд/разряд по уровням напряжения
-  if (requestButtonEnd(0b00001001)) {  // Если включена умная тренировка hightChardg
+  if (requestButtonEnd(0b00001001, tm, buttonPushArray, buttonArray, buttonSearch)) {  // Если включена умная тренировка hightChardg
       // Проверить массив, он должен быть заполнен
 
       int intPart;
@@ -223,7 +224,7 @@ bool outputMonitor()
         return false;
     }
 
-    if (requestButtonEnd(0b00000001)) {
+    if (requestButtonEnd(0b00000001, tm, buttonPushArray, buttonArray, buttonSearch)) {
         if (chardgeRightNow == true) {
             outString = "C-UP    ";
         }
@@ -244,13 +245,13 @@ void outInformationWithPause()
 bool viewTimeChardge()
 {
     // Показать заданное время разряда
-    if (requestButtonEnd(0b10000000) || requestButtonEnd(0b10010000)  || requestButtonEnd(0b10010010)  || requestButtonEnd(0b10010100)) {
+    if (requestButtonEnd(0b10000000, tm, buttonPushArray, buttonArray, buttonSearch) || requestButtonEnd(0b10010000, tm, buttonPushArray, buttonArray, buttonSearch)  || requestButtonEnd(0b10010010, tm, buttonPushArray, buttonArray, buttonSearch)  || requestButtonEnd(0b10010100, tm, buttonPushArray, buttonArray, buttonSearch)) {
         displayTimeFromMillis(outString, tWork);
         return true;
     }
 
     // показать заданное время заряда
-    if (requestButtonEnd(0b01000000) || requestButtonEnd(0b01010000) || requestButtonEnd(0b01010010) || requestButtonEnd(0b01010100)) {
+    if (requestButtonEnd(0b01000000, tm, buttonPushArray, buttonArray, buttonSearch) || requestButtonEnd(0b01010000, tm, buttonPushArray, buttonArray, buttonSearch) || requestButtonEnd(0b01010010, tm, buttonPushArray, buttonArray, buttonSearch) || requestButtonEnd(0b01010100, tm, buttonPushArray, buttonArray, buttonSearch)) {
         displayTimeFromMillis(outString, tChardge);
         return true;
     }
@@ -277,10 +278,10 @@ void buttonClosed(uint8_t number)
 }
 
 // Функция сравнивает заданную комбинацию с реально нажатыми и отжатыми кнопками.
-bool requestButtonEnd(uint8_t maskForRequest)
-{
-    if (maskForRequest == buttonSearch(tm, buttonPushArray, buttonArray)) 
-        return true;
-    return false;
-}
+// bool requestButtonEnd(uint8_t maskForRequest)
+// {
+//     if (maskForRequest == buttonSearch(tm, buttonPushArray, buttonArray)) 
+//         return true;
+//     return false;
+// }
 

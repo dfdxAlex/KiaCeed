@@ -1,0 +1,13 @@
+*.elf
+*.hex
+*.bin
+*.eep
+*.d
+*.o
+*.dep
+*.a
+*.log
+build/
+.vscode/
+.DS_Store
+*.zip

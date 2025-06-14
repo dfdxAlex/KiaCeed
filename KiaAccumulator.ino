@@ -2,6 +2,7 @@
 #include <TM1638plus.h> // include the library
 
 #include "welcome.h"
+#include "infoChardge.h"
 
 #define  STROBE_TM 10 // strobe = GPIO connected to strobe line of module
 #define  CLOCK_TM 11  // clock = GPIO connected to clock line of module
@@ -63,7 +64,7 @@ void loop() {
     // outString = "        ";
     treningAKB();
 
-    infoChardge();
+    infoChardge(chardgeRightNow);
     
     buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
 
@@ -366,28 +367,4 @@ void displayTimeFromMillis(unsigned long ms) {
   if (hours > 99) hours = 99;                   // Максимальное число часов 99
 
 sprintf(outString, "%02d.%02d.%02d  ", hours, minutes, seconds);
-}
-
-// // // Функция запускается при старте чтобы показать модификацию программы и нагнать понтов.
-// void welcome(char tik, int propertyForDelay)
-// {
-//         for (char i=2; i<tik; i++) {
-//         if (i % 2 == 0)
-//             tm.displayText("V-1.6   ");
-//         else
-//             tm.displayText("READY   ");
-//         delay(propertyForDelay);
-//     }
-// }
-
-// Функция выводит состояние - зарядка - не зарядка в зависимости от пина digitalRead(9)
-// То есть информация берется со светодиода зарядного устройства. 
-bool infoChardge()
-{
-    if (digitalRead(9) != HIGH) {
-        chardgeRightNow = true;
-        return true;
-    }
-    chardgeRightNow = false;
-    return false;
 }

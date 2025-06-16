@@ -6,13 +6,9 @@
 #include "displayTimeFromMillis.h"
 #include "buttonSearch.h"
 #include "requestButtonEnd.h"
+#include "global.h"
 
-#define  STROBE_TM 10 // strobe = GPIO connected to strobe line of module
-#define  CLOCK_TM 11  // clock = GPIO connected to clock line of module
-#define  DIO_TM 12 // data = GPIO connected to data line of module
-bool high_freq = false; // default false, If using a high freq CPU > ~100 MHZ set to true. 
-
-TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM, high_freq);
+TM1638plus tm(10, 11 , 12, false);
 
 long tChardge = 36000000;   // длина времени зарядки
 long tWork = 3*3600000;     // длина времени разрядки
@@ -59,17 +55,16 @@ void setup() {
 
     tm.setLED(0, false);
 
-    welcome(tm, 10, 800);
+    welcome();
 
 }
 
 void loop() {
-    // outString = "        ";
     treningAKB();
 
-    infoChardge(chardgeRightNow);
+    infoChardge();
     
-    buttonSearch(tm, buttonPushArray, buttonArray); // проверяет кнопки и записывает нажатые в переменные
+    buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
 
     // Если есть условия то показать время заряда либо разряда
     if (!viewTimeChardge()) {outputMonitor();} //временно закоментировал, чтобы не мешала функция outputMonitor
@@ -144,7 +139,7 @@ bool treningAKB()
       return false;
   }
 
-  if (requestButtonEnd(0b00000001, buttonPushArray, buttonArray)) { // Сюда заходим если нажата только S1
+  if (requestButtonEnd(0b00000001)) { // Сюда заходим если нажата только S1
       if (digitalRead(LED_BUILTIN) == HIGH) 
          chardgeRightNow = true;
       if (digitalRead(LED_BUILTIN) == LOW) 
@@ -169,7 +164,7 @@ bool treningAKB()
   }
   
   // Режим заряд/разряд по уровням напряжения
-  if (requestButtonEnd(0b00001001, buttonPushArray, buttonArray)) {  // Если включена умная тренировка hightChardg
+  if (requestButtonEnd(0b00001001)) {  // Если включена умная тренировка hightChardg
       // Проверить массив, он должен быть заполнен
 
       int intPart;
@@ -224,7 +219,7 @@ bool outputMonitor()
         return false;
     }
 
-    if (requestButtonEnd(0b00000001, buttonPushArray, buttonArray)) {
+    if (requestButtonEnd(0b00000001)) {
         if (chardgeRightNow == true) {
             outString = "C-UP    ";
         }
@@ -245,14 +240,14 @@ void outInformationWithPause()
 bool viewTimeChardge()
 {
     // Показать заданное время разряда
-    if (requestButtonEnd(0b10000000, buttonPushArray, buttonArray) || requestButtonEnd(0b10010000, buttonPushArray, buttonArray)  || requestButtonEnd(0b10010010, buttonPushArray, buttonArray)  || requestButtonEnd(0b10010100, buttonPushArray, buttonArray)) {
-        displayTimeFromMillis(outString, tWork);
+    if (requestButtonEnd(0b10000000) || requestButtonEnd(0b10010000)  || requestButtonEnd(0b10010010)  || requestButtonEnd(0b10010100)) {
+        displayTimeFromMillis(tWork);
         return true;
     }
 
     // показать заданное время заряда
-    if (requestButtonEnd(0b01000000, buttonPushArray, buttonArray) || requestButtonEnd(0b01010000, buttonPushArray, buttonArray) || requestButtonEnd(0b01010010, buttonPushArray, buttonArray) || requestButtonEnd(0b01010100, buttonPushArray, buttonArray)) {
-        displayTimeFromMillis(outString, tChardge);
+    if (requestButtonEnd(0b01000000) || requestButtonEnd(0b01010000) || requestButtonEnd(0b01010010) || requestButtonEnd(0b01010100)) {
+        displayTimeFromMillis(tChardge);
         return true;
     }
 

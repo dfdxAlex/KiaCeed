@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <TM1638plus.h>
 #include "buttonSearch.h"  // Подключаем заголовочный файл
+#include "global.h"
 
-uint8_t buttonSearch(TM1638plus tm, bool* buttonPushArray, bool* buttonArray)
+uint8_t buttonSearch()
 {
     uint8_t buttons = tm.readButtons();
     for (char i = 0; i < 8; i++) {

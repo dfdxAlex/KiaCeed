@@ -1,11 +1,12 @@
 // #include <Arduino.h>
 #include <TM1638plus.h>
 #include "displayTimeFromMillis.h"  // Подключаем заголовочный файл
+#include "global.h"
 
 // функция переводит секунды в нормальный вид: часы:минуты
 // https://github.com/dfdxAlex/KiaCeed.git
 // https://youtu.be/u3vY8uXiEkI
-void displayTimeFromMillis(char* outString, unsigned long ms) {
+void displayTimeFromMillis(unsigned long ms) {
 
   unsigned long totalSeconds = ms / 1000;       // Перевести миллисекунды в секунды
   uint8_t seconds = totalSeconds % 60;          // Посчитать число секунд

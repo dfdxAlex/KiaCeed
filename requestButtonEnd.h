@@ -2,6 +2,6 @@
 #define REQUESTBUTTONEND_H
 
 // Описание функции
-bool requestButtonEnd(uint8_t maskForRequest, bool* buttonPushArray, bool* buttonArray);
+bool requestButtonEnd(uint8_t maskForRequest);
 
 #endif

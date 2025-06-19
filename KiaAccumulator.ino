@@ -71,7 +71,6 @@ void setup() {
 void loop() {
     testOutInfo = 0;
     strcpy(outString, "        ");
-    // Serial.println(outString); 
 
     outputMonitor();
 
@@ -81,11 +80,9 @@ void loop() {
     
     buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
 
-    // Если есть условия то показать время заряда либо разряда
-    // if (!viewTimeChardge()) {outputMonitor();} //временно закоментировал, чтобы не мешала функция outputMonitor
+    // Если есть условия то показать заданное время заряда либо разряда
     viewTimeChardge();
-
-    // Функция задает время зарядки акб для режима 1
+    // Функция задает время зарядки акб для режима 1 (ручной режим)
     setTimeChardge();
 
     timeAccumulator = millis() - milisek; // Аккумулятор времени, для цикла зарядки-разрядки аккумулятора

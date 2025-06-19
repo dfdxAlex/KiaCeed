@@ -37,29 +37,34 @@ bool treningAKB()
   }
   
   // Режим заряд/разряд по уровням напряжения
-  if (requestButtonEnd(0b00001001)) {  // Если включена умная тренировка hightChardg
+  if (requestButtonEnd(0b00001001) || requestButtonEnd(0b00001111)) {  // Если включена умная тренировка hightChardg
       // Проверить массив, он должен быть заполнен
 
       int intPart;
       int fracPart;
-      
 
       if (buttonArray[0] && buttonArray[1] && buttonArray[2]) {
 
         // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
         if (digitalRead(LED_BUILTIN) == HIGH) {
             if (lockFlagDown > analogRead(A0)) lockFlagDown = analogRead(A0);
-            float lockFlagDownF = (float)lockFlagDown/1024*5;
-            intPart = (int)lockFlagDownF;                         // Целая часть
-            fracPart = (int)((lockFlagDownF - intPart) * 1000);    // Дробная часть
-            sprintf(outString, "%01d.%03d", intPart, fracPart);
+            // float lockFlagDownF = (float)lockFlagDown/1024*5;
+            // float lockFlagDownF = intFracPart(lockFlagDown);
+            // intPart = (int)lockFlagDownF;                         // Целая часть
+            // fracPart = (int)((lockFlagDownF - intPart) * 1000);    // Дробная часть
+            // intPart = intFracPart(intFracPart(lockFlagDown));                        // Целая часть
+            // fracPart = intFracPart(intFracPart(lockFlagDown), true);    // Дробная часть
+            sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagDown)), intFracPart(intFracPart(lockFlagDown), true));
         }
         if (digitalRead(LED_BUILTIN) == LOW) {
           if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
-          float lockFlagUpF = (float)lockFlagUp/1024*5;
-          intPart = (int)lockFlagUpF;                         // Целая часть
-          fracPart = (int)((lockFlagUpF - intPart) * 1000);    // Дробная часть
-          sprintf(outString, "%01d.%03d", intPart, fracPart);
+          // float lockFlagUpF = (float)lockFlagUp/1024*5;
+          // float lockFlagUpF = intFracPart(lockFlagUp);
+          // intPart = (int)lockFlagUpF; 
+          // intPart = intFracPart(lockFlagUpF);                         // Целая часть
+          // fracPart = (int)((lockFlagUpF - intPart) * 1000);    // Дробная часть
+          // fracPart = intFracPart(lockFlagUpF, true);    // Дробная часть
+          sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true));
         }
       }
 
@@ -83,4 +88,23 @@ bool treningAKB()
   }
 }
 
+// Ради развлечения реализована перегрузка функций.
+// Функция при получении целого числа пересчитывает его в десятичное.
+// Целое - это макс 1024 при 5 вольтах на входе.
+// Дробное - это пересчёт текущего напряжения
+float intFracPart(int flag)
+{
+    return (float)flag/1024*5;
+}
 
+// Если на вход приходит только одно дробное, то вернуть целюю часть
+int intFracPart(float flag)
+{
+    return (int)flag;
+}
+
+// Если на вход приходит одно дробное и любой boolean, то вернуть дробную часть
+int intFracPart(float flag, bool x)
+{
+    return (int)((flag - intFracPart(flag)) * 1000);
+}

@@ -3,5 +3,8 @@
 
 // Описание функции
 bool treningAKB();
+float intFracPart(int flag);
+int intFracPart(float flag);
+int intFracPart(float flag, bool x);
 
 #endif

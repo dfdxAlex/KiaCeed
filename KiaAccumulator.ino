@@ -1,6 +1,4 @@
-
 #include <TM1638plus.h> // include the library
-
 #include "welcome.h"
 #include "infoChardge.h"
 #include "displayTimeFromMillis.h"
@@ -9,15 +7,24 @@
 #include "global.h"
 #include "buttonClosed.h"
 #include "setTimeChardge.h"
+#include "viewTimeChardge.h"
+#include "outInformationWithPause.h"
+#include "outputMonitor.h"
+#include "treningAKB.h"
 
 TM1638plus tm(10, 11 , 12, false);
+
+// Переменная будет содержать в сете номер функции, которая изменила переменную outString
+// Переменная для отладки, после отладки можно закоментировать её
+int testOutInfo = 0;
 
 long tChardge = 36000000;   // длина времени зарядки
 long tWork = 3*3600000;     // длина времени разрядки
 unsigned long timeAccumulator = 0;   // аккумулятор хранит число милиссекунд от последнего изменения состояния зарядка/разрядка аккумулятора
 
 bool chardgeRightNow = false;        // показывает идёт ли зарядка прямо сейчас
-char* outString = "        ";        // Переменная хранит в себе текст, который нужно вывести;
+// char* outString = "        ";        // Переменная хранит в себе текст, который нужно вывести;
+char outString[9];        // Переменная хранит в себе текст, который нужно вывести;
 
 // Хранит состояния нажатых кнопок на мониторе
 bool buttonArray[8] = {false, false, false, false, false, false, false, false};
@@ -62,6 +69,12 @@ void setup() {
 }
 
 void loop() {
+    testOutInfo = 0;
+    strcpy(outString, "        ");
+    // Serial.println(outString); 
+
+    outputMonitor();
+
     treningAKB();
 
     infoChardge();
@@ -69,144 +82,15 @@ void loop() {
     buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
 
     // Если есть условия то показать время заряда либо разряда
-    if (!viewTimeChardge()) {outputMonitor();} //временно закоментировал, чтобы не мешала функция outputMonitor
-    // viewTimeChardge();
+    // if (!viewTimeChardge()) {outputMonitor();} //временно закоментировал, чтобы не мешала функция outputMonitor
+    viewTimeChardge();
 
     // Функция задает время зарядки акб для режима 1
     setTimeChardge();
 
     timeAccumulator = millis() - milisek; // Аккумулятор времени, для цикла зарядки-разрядки аккумулятора
 
+    // Serial.println(testOutInfo);
     // Функция выводит данные в индикатор из глобальной переменной и должна запускаться в конце программы.
     outInformationWithPause();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-// Функция тренирует акб
-bool treningAKB()
-{
-  if (!buttonArray[0]) {
-      digitalWrite(LED_BUILTIN, LOW);  // Зарядка акамулятора
-      return false;
-  }
-
-  if (requestButtonEnd(0b00000001)) { // Сюда заходим если нажата только S1
-      if (digitalRead(LED_BUILTIN) == HIGH) 
-         chardgeRightNow = true;
-      if (digitalRead(LED_BUILTIN) == LOW) 
-         chardgeRightNow = false;
-
-      // Режим заряд/разряд по времени
-      // Здесь только процесс сравнивания с текущим состоянием работы одного из режимов заряд/разряд и если времени прошло больше заданного, то переключаемся
-      if (timeAccumulator > tChardge)                     // Если превышено время разрядки
-          if (digitalRead(LED_BUILTIN) != HIGH) {      // Если ещё не включили разрядку
-              digitalWrite(LED_BUILTIN, HIGH);         // Включить разрядку
-              milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
-              timeAccumulator = 0;                     // Обнулить аккумулятор
-          }
-      if (timeAccumulator > tWork)                  // Если превышено время зарядки
-          if (digitalRead(LED_BUILTIN) != LOW) {       // Если ещё не включена зарядка
-              digitalWrite(LED_BUILTIN, LOW);          // Включить зарядку
-              milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
-              timeAccumulator = 0;                     // Обнулить аккумулятор
-          }
-
-    
-  }
-  
-  // Режим заряд/разряд по уровням напряжения
-  if (requestButtonEnd(0b00001001)) {  // Если включена умная тренировка hightChardg
-      // Проверить массив, он должен быть заполнен
-
-      int intPart;
-      int fracPart;
-      
-
-      if (buttonArray[0] && buttonArray[1] && buttonArray[2]) {
-
-        // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
-        if (digitalRead(LED_BUILTIN) == HIGH) {
-            if (lockFlagDown > analogRead(A0)) lockFlagDown = analogRead(A0);
-            float lockFlagDownF = (float)lockFlagDown/1024*5;
-            intPart = (int)lockFlagDownF;                         // Целая часть
-            fracPart = (int)((lockFlagDownF - intPart) * 1000);    // Дробная часть
-            sprintf(outString, "%01d.%03d", intPart, fracPart);
-        }
-        if (digitalRead(LED_BUILTIN) == LOW) {
-          if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
-          float lockFlagUpF = (float)lockFlagUp/1024*5;
-          intPart = (int)lockFlagUpF;                         // Целая часть
-          fracPart = (int)((lockFlagUpF - intPart) * 1000);    // Дробная часть
-          sprintf(outString, "%01d.%03d", intPart, fracPart);
-        }
-      }
-
-      // Если аккумулятор разрядка
-    //   if (digitalRead(LED_BUILTIN) == HIGH) {
-    //       if (analogRead(A0) < lowChardg) {
-    //           digitalWrite(LED_BUILTIN, LOW);
-    //           chardgeRightNow = true;
-    //           Serial.println("Смарт разрядка");
-    //       }
-    //   }
-    //   // Если аккумулятор зарядка
-    //   if (digitalRead(LED_BUILTIN) == LOW) {
-    //     Serial.println("Смарт зарядка 1");
-    //        if (!chardgeRightNow) {
-    //         digitalWrite(LED_BUILTIN, HIGH);
-    //         chardgeRightNow = false;
-    //         Serial.println("Смарт зарядка 2");
-    //        } 
-    //   }
-  }
-}
-
-// функция выводит результат на монитор
-bool outputMonitor() 
-{
-    // Если нажаты кнопки S1, S2, S3, S4 - это значит что идёт смарт зарядка с включенным монитором процессов
-    if (buttonArray[0] && buttonArray[1] && buttonArray[2] && buttonArray[3] ) {
-        //    && (buttonArray[4] || buttonArray[5] || buttonArray[6] || buttonArray[7])) {
-        return false;
-    }
-
-    if (requestButtonEnd(0b00000001)) {
-        if (chardgeRightNow == true) {
-            outString = "C-UP    ";
-        }
-        else {
-            outString = "C-DontUP";
-        }
-    }
-    return false;
-}
-
-void outInformationWithPause()
-{
-    tm.displayText(outString);
-    delay(100);
-}
-
-// Показывает заданные значения заряда-разряда/ S7-показывает время заряда, S8 - разряда
-bool viewTimeChardge()
-{
-    // Показать заданное время разряда
-    if (requestButtonEnd(0b10000000) || requestButtonEnd(0b10010000)  || requestButtonEnd(0b10010010)  || requestButtonEnd(0b10010100)) {
-        displayTimeFromMillis(tWork);
-        return true;
-    }
-
-    // показать заданное время заряда
-    if (requestButtonEnd(0b01000000) || requestButtonEnd(0b01010000) || requestButtonEnd(0b01010010) || requestButtonEnd(0b01010100)) {
-        displayTimeFromMillis(tChardge);
-        return true;
-    }
-
-    return false;
 }

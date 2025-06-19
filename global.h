@@ -28,3 +28,6 @@ extern int lockFlagDown;
 extern int lockFlagUp;
 
 extern int testOutInfo;
+
+extern int lowChardg;
+extern int hightChardg;   

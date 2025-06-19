@@ -46,45 +46,37 @@ bool treningAKB()
       if (buttonArray[0] && buttonArray[1] && buttonArray[2]) {
 
         // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
+        // Если наался процесс разрядки аккумулятора, то берем напряжение с входа 0, этот 
+        // вход подключен к разрядному резистору
         if (digitalRead(LED_BUILTIN) == HIGH) {
             if (lockFlagDown > analogRead(A0)) lockFlagDown = analogRead(A0);
-            // float lockFlagDownF = (float)lockFlagDown/1024*5;
-            // float lockFlagDownF = intFracPart(lockFlagDown);
-            // intPart = (int)lockFlagDownF;                         // Целая часть
-            // fracPart = (int)((lockFlagDownF - intPart) * 1000);    // Дробная часть
-            // intPart = intFracPart(intFracPart(lockFlagDown));                        // Целая часть
-            // fracPart = intFracPart(intFracPart(lockFlagDown), true);    // Дробная часть
             sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagDown)), intFracPart(intFracPart(lockFlagDown), true));
         }
+        // Если выключен выход 13, значит не разряжаем, значит используем напряжение с выхода 1
+        // Этот выход подключен а аккумулятору когда он не РАзряжается
         if (digitalRead(LED_BUILTIN) == LOW) {
           if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
-          // float lockFlagUpF = (float)lockFlagUp/1024*5;
-          // float lockFlagUpF = intFracPart(lockFlagUp);
-          // intPart = (int)lockFlagUpF; 
-          // intPart = intFracPart(lockFlagUpF);                         // Целая часть
-          // fracPart = (int)((lockFlagUpF - intPart) * 1000);    // Дробная часть
-          // fracPart = intFracPart(lockFlagUpF, true);    // Дробная часть
           sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true));
         }
       }
 
-      // Если аккумулятор разрядка
-    //   if (digitalRead(LED_BUILTIN) == HIGH) {
-    //       if (analogRead(A0) < lowChardg) {
-    //           digitalWrite(LED_BUILTIN, LOW);
-    //           chardgeRightNow = true;
-    //           Serial.println("Смарт разрядка");
-    //       }
-    //   }
-    //   // Если аккумулятор зарядка
-    //   if (digitalRead(LED_BUILTIN) == LOW) {
-    //     Serial.println("Смарт зарядка 1");
-    //        if (!chardgeRightNow) {
-    //         digitalWrite(LED_BUILTIN, HIGH);
-    //         chardgeRightNow = false;
-    //         Serial.println("Смарт зарядка 2");
-    //        } 
-    //   }
+      //Если аккумулятор разрядка
+      if (digitalRead(LED_BUILTIN) == HIGH) {
+          if (analogRead(A0) < lowChardg) {
+              digitalWrite(LED_BUILTIN, LOW);
+              chardgeRightNow = false;
+              // Serial.println("Смарт разрядка");
+          }
+      }
+      // Если аккумулятор зарядка
+      if (digitalRead(LED_BUILTIN) == LOW && digitalRead(LED_BUILTIN) == LOW) {
+        // Serial.println("Смарт зарядка 1");
+           if (!chardgeRightNow) {
+            digitalWrite(LED_BUILTIN, HIGH);
+            chardgeRightNow = true;
+            // Serial.println("Смарт зарядка 2");
+           } 
+      }
   }
 }
 

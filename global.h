@@ -9,5 +9,12 @@ extern bool chardgeRightNow;
 // переменная хранит в себе информацию, которую нужно будет в конце скетча вывести на екран
 extern char* outString;
 
+// Программирование времени зарядки-разрядки
+// Переменная хранит шаг изменения при повышении или понижении времени зарядки и разрядки
+extern long stepIncrementDecrementTimeChardge;
+
+extern long tChardge;   // длина времени зарядки
+extern long tWork;     // длина времени разрядки
+
 #include <TM1638plus.h>  // обязательно, чтобы тип был известен
 extern TM1638plus tm;

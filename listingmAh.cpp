@@ -4,6 +4,8 @@
 #include "global.h"
 #include "requestButtonEnd.h"
 #include "buttonClosed.h"
+#include "displayTimeFromMillis.h"
+#include "outInformationWithPause.h"
 
 // Функция выводит в цикле содержимое массива с миллиамперами разряда
 void listingmAh()
@@ -12,9 +14,9 @@ void listingmAh()
 
     char localOutString[9];
     for (char i=0; i<5; i++) {
-        sprintf(localOutString, "%04d.%03s%01d", mAh[i], "   ", i);
+        sprintf(localOutString, "%06d.%01s%01d", mAh[i], " ", i);
         tm.displayText(localOutString);
-        delay(1000);
+        delay(900);
     }
 
     buttonClosed(7);

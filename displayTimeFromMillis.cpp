@@ -16,5 +16,6 @@ void displayTimeFromMillis(unsigned long ms) {
   // Ограничим отображение максимумом 2 цифр:
   if (hours > 99) hours = 99;                   // Максимальное число часов 99
 
-sprintf(outString, "%02d.%02d.%02d  ", hours, minutes, seconds);
+// sprintf(outString, "%02d.%02d.%02d  ", hours, minutes, seconds);
+snprintf(outString, sizeof(outString), "%02d.%02d.%02d  ", hours, minutes, seconds);
 }

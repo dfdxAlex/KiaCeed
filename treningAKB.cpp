@@ -40,8 +40,8 @@ bool treningAKB()
   if (requestButtonEnd(0b00001001) || requestButtonEnd(0b00001111)) {  // Если включена умная тренировка hightChardg
       // Проверить массив, он должен быть заполнен
 
-      int intPart;
-      int fracPart;
+    //   int intPart;
+    //   int fracPart;
 
       if (buttonArray[0] && buttonArray[1] && buttonArray[2]) {
 
@@ -55,6 +55,7 @@ bool treningAKB()
         // Если выключен выход 13, значит не разряжаем, значит используем напряжение с выхода 1
         // Этот выход подключен а аккумулятору когда он не РАзряжается
         if (digitalRead(LED_BUILTIN) == LOW) {
+        //   Serial.println(analogRead(A1));
           if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
           sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true));
         }

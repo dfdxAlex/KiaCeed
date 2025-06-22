@@ -53,7 +53,7 @@ long stepIncrementDecrementTimeChardge = 1;
 
 void setup() {
 
-    Serial.begin(9600); // скорость передачи, должна совпадать с монитором
+    // Serial.begin(9600); // скорость передачи, должна совпадать с монитором
     // Serial.println("Привет, монитор!");
 
     pinMode(LED_BUILTIN, OUTPUT); // Настройка пина светодиода
@@ -72,6 +72,7 @@ void loop() {
     testOutInfo = 0;
     strcpy(outString, "        ");
 
+    // Функция выводит C_UP или CdontUp
     outputMonitor();
 
     treningAKB();

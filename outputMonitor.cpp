@@ -6,7 +6,7 @@
 // функция выводит результат на монитор
 void outputMonitor() 
 {
-    if (requestButtonEnd(0b00000001)) {
+    if (requestButtonEnd(0b00000001) || requestButtonEnd(0b00001001)) {
         if (chardgeRightNow == true) {
             testOutInfo = 1;                     // маркер для отладки
             strcpy(outString, "C-UP    ");

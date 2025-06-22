@@ -1,6 +1,5 @@
 #include <TM1638plus.h> // include the library
 #include "welcome.h"
-#include "infoChardge.h"
 #include "displayTimeFromMillis.h"
 #include "buttonSearch.h"
 #include "requestButtonEnd.h"
@@ -22,8 +21,6 @@ long tChardge = 36000000;   // длина времени зарядки
 long tWork = 3*3600000;     // длина времени разрядки
 unsigned long timeAccumulator = 0;   // аккумулятор хранит число милиссекунд от последнего изменения состояния зарядка/разрядка аккумулятора
 
-bool chardgeRightNow = false;        // показывает идёт ли зарядка прямо сейчас
-// char* outString = "        ";        // Переменная хранит в себе текст, который нужно вывести;
 char outString[9];        // Переменная хранит в себе текст, который нужно вывести;
 
 // Хранит состояния нажатых кнопок на мониторе
@@ -77,8 +74,6 @@ void loop() {
 
     treningAKB();
 
-    infoChardge();
-    
     buttonSearch(); // проверяет кнопки и записывает нажатые в переменные
 
     // Если есть условия то показать заданное время заряда либо разряда

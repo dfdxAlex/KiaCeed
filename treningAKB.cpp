@@ -13,10 +13,6 @@ bool treningAKB()
   }
 
   if (requestButtonEnd(0b00000001)) { // Сюда заходим если нажата только S1
-      if (digitalRead(LED_BUILTIN) == HIGH) 
-         chardgeRightNow = true;
-      if (digitalRead(LED_BUILTIN) == LOW) 
-         chardgeRightNow = false;
 
       // Режим заряд/разряд по времени
       // Здесь только процесс сравнивания с текущим состоянием работы одного из режимов заряд/разряд и если времени прошло больше заданного, то переключаемся
@@ -32,19 +28,14 @@ bool treningAKB()
               milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
               timeAccumulator = 0;                     // Обнулить аккумулятор
           }
-
-    
   }
   
   // Режим заряд/разряд по уровням напряжения
   if (requestButtonEnd(0b00001001) || requestButtonEnd(0b00001111)) {  // Если включена умная тренировка hightChardg
       // Проверить массив, он должен быть заполнен
 
-    //   int intPart;
-    //   int fracPart;
-
-      if (buttonArray[0] && buttonArray[1] && buttonArray[2]) {
-
+      // Показывать значение заряда-разряда в миливольтах если нажаты все 4 кнопки
+      if (requestButtonEnd(0b00001111)) {
         // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
         // Если наался процесс разрядки аккумулятора, то берем напряжение с входа 0, этот 
         // вход подключен к разрядному резистору
@@ -65,18 +56,11 @@ bool treningAKB()
       if (digitalRead(LED_BUILTIN) == HIGH) {
           if (analogRead(A0) < lowChardg) {
               digitalWrite(LED_BUILTIN, LOW);
-              chardgeRightNow = false;
-              // Serial.println("Смарт разрядка");
           }
       }
       // Если аккумулятор зарядка
-      if (digitalRead(LED_BUILTIN) == LOW && digitalRead(LED_BUILTIN) == LOW) {
-        // Serial.println("Смарт зарядка 1");
-           if (!chardgeRightNow) {
+      if (digitalRead(LED_BUILTIN) == LOW && analogRead(A1) > hightChardg) {
             digitalWrite(LED_BUILTIN, HIGH);
-            chardgeRightNow = true;
-            // Serial.println("Смарт зарядка 2");
-           } 
       }
   }
 }
@@ -85,9 +69,13 @@ bool treningAKB()
 // Функция при получении целого числа пересчитывает его в десятичное.
 // Целое - это макс 1024 при 5 вольтах на входе.
 // Дробное - это пересчёт текущего напряжения
+// ******************************************
+// Если в функцию заходит int, это значит что пришёл int с аналогового входа 0-1023
+// Значит нужно преобразовать это значение в число дробное, показывающее вольты 
+// Стандартный способ пересчёта АЦП в напряжение на Arduino
 float intFracPart(int flag)
 {
-    return (float)flag/1024*5;
+    return (float)flag/1023*5;
 }
 
 // Если на вход приходит только одно дробное, то вернуть целюю часть
@@ -99,5 +87,5 @@ int intFracPart(float flag)
 // Если на вход приходит одно дробное и любой boolean, то вернуть дробную часть
 int intFracPart(float flag, bool x)
 {
-    return (int)((flag - intFracPart(flag)) * 1000);
+    return (int)round((flag - intFracPart(flag)) * 1000);
 }

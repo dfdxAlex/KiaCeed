@@ -7,7 +7,7 @@
 void outputMonitor() 
 {
     if (requestButtonEnd(0b00000001) || requestButtonEnd(0b00001001)) {
-        if (chardgeRightNow == true) {
+        if (digitalRead(LED_BUILTIN) == LOW) {
             testOutInfo = 1;                     // маркер для отладки
             strcpy(outString, "C-UP    ");
         }

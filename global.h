@@ -28,3 +28,7 @@ extern int testOutInfo;
 
 extern int lowChardg;
 extern int hightChardg;   
+
+extern int mAh[5];
+extern unsigned long milisecForSmartChardgeStart;
+extern unsigned long milisecForSmartChardgeFinish;

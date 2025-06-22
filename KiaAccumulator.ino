@@ -10,6 +10,7 @@
 #include "outInformationWithPause.h"
 #include "outputMonitor.h"
 #include "treningAKB.h"
+#include "listingmAh.h"
 
 TM1638plus tm(10, 11 , 12, false);
 
@@ -30,17 +31,15 @@ bool buttonPushArray[8] = {false, false, false, false, false, false, false, fals
 
 unsigned long milisek = millis(); // Запоминает число миллисекунд нп новом цыкле для аккумулятора
 
-// хранит время последнего заряда
-unsigned long timeLastChardge = 1;
-// хранит время последнего разряда
-unsigned long timeLastDisChardge = 2;
 
 // Работа с автоматическим контролем разряда
 // Массив будет хранить последние данные о времени разряда батареи
 int mAh[5] = {0,0,0,0,0};
+unsigned long milisecForSmartChardgeStart = 0;   // Переменные хранят время начала и конца разряда
+unsigned long milisecForSmartChardgeFinish = 1;  // Переменные хранят время начала и конца разряда
 int lowChardg = 185;               // Аналог 0.9 вольт, допустимая разрядка аккамулятора 0.9/5*1024
 int hightChardg = 286;             // Аналог 1.4 вольт, допустимая зарядка аккамулятора 1.4/5*1024
-bool statusChardgDisChardg = true; // Состояние зарядки или разрядки. Должен перейти в true если упали ниже 0.9 Вольт или в false если поднялись выше 1.4 Вольт
+// bool statusChardgDisChardg = true; // Состояние зарядки или разрядки. Должен перейти в true если упали ниже 0.9 Вольт или в false если поднялись выше 1.4 Вольт
 int lockFlagUp = 0;                // Переменная нужна для организации плавного вывода данных счётчика
 int lockFlagDown = 2000;           // Переменная нужна для организации плавного вывода данных счётчика
 
@@ -71,6 +70,9 @@ void loop() {
 
     // Функция выводит C_UP или CdontUp
     outputMonitor();
+
+    // Показывает массив с данными по тренировке аккумуляторов
+    listingmAh();
 
     treningAKB();
 

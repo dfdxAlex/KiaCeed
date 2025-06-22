@@ -31,35 +31,57 @@ bool treningAKB()
   }
   
   // Режим заряд/разряд по уровням напряжения
-  if (requestButtonEnd(0b00001001) || requestButtonEnd(0b00001111)) {  // Если включена умная тренировка hightChardg
+  // Если включена умная тренировка hightChardg
+  if (requestButtonEnd(0b00001001)             // Включена просто тренировка без индикации
+     || requestButtonEnd(0b00001111)           // Включена тренировка с индикации в вольтах
+        || requestButtonEnd(0b00001011)        // Включена тренировка с индикацией в цифрах 0-1023
+           || requestButtonEnd(0b00001101)) {  // Включена тренировка с индикацией цели в цифрах 0-1023
       // Проверить массив, он должен быть заполнен
 
       // Показывать значение заряда-разряда в миливольтах если нажаты все 4 кнопки
-      if (requestButtonEnd(0b00001111)) {
+      if (requestButtonEnd(0b00001111) || requestButtonEnd(0b00001011) || requestButtonEnd(0b00001101)) {
         // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
         // Если наался процесс разрядки аккумулятора, то берем напряжение с входа 0, этот 
         // вход подключен к разрядному резистору
         if (digitalRead(LED_BUILTIN) == HIGH) {
             if (lockFlagDown > analogRead(A0)) lockFlagDown = analogRead(A0);
-            sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagDown)), intFracPart(intFracPart(lockFlagDown), true));
+            if (requestButtonEnd(0b00001111)) {
+                sprintf(outString, "%01d.%03d%04s", intFracPart(intFracPart(lockFlagDown)), intFracPart(intFracPart(lockFlagDown), true), "    ");
+            }
+            if (requestButtonEnd(0b00001011)) {
+                sprintf(outString, "%04d.%04d", analogRead(A0), lowChardg);
+            }
+            if (requestButtonEnd(0b00001101)) {
+                sprintf(outString, "%04d.%04d", lowChardg, analogRead(A0));
+            }
         }
         // Если выключен выход 13, значит не разряжаем, значит используем напряжение с выхода 1
         // Этот выход подключен а аккумулятору когда он не РАзряжается
         if (digitalRead(LED_BUILTIN) == LOW) {
-        //   Serial.println(analogRead(A1));
-          if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
-          sprintf(outString, "%01d.%03d", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true));
+            if (lockFlagUp < analogRead(A1)) lockFlagUp = analogRead(A1);
+            if (requestButtonEnd(0b00001111)) {
+                sprintf(outString, "%01d.%03d%04s", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true), "    ");
+            }
+            if (requestButtonEnd(0b00001011)) {
+                sprintf(outString, "%04d.%04d", analogRead(A1), hightChardg);
+            }
+            if (requestButtonEnd(0b00001101)) {
+                sprintf(outString, "%04d.%04d", hightChardg, analogRead(A1));
+            }
         }
       }
 
       //Если аккумулятор разрядка
       if (digitalRead(LED_BUILTIN) == HIGH) {
+          // Если аккумулятор разрядился до нужного уровня
           if (analogRead(A0) < lowChardg) {
               digitalWrite(LED_BUILTIN, LOW);
           }
       }
       // Если аккумулятор зарядка
-      if (digitalRead(LED_BUILTIN) == LOW && analogRead(A1) > hightChardg) {
+      if (digitalRead(LED_BUILTIN) == LOW)
+          // Если напряжении на аккумуляторе больше заданного и если процесс зарядки закончился от зарядного
+          if (analogRead(A1) > hightChardg && digitalRead(9)) {
             digitalWrite(LED_BUILTIN, HIGH);
       }
   }

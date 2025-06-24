@@ -35,14 +35,6 @@ bool treningAKB()
   
   // Режим заряд/разряд по уровням напряжения
   // Если включена умная тренировка hightChardg
-//   if (requestButtonEnd(0b00001001)             // Включена просто тренировка без индикации
-//      || requestButtonEnd(0b00001111)           // Включена тренировка с индикации в вольтах
-//         || requestButtonEnd(0b00001011)        // Включена тренировка с индикацией в цифрах 0-1023
-//            || requestButtonEnd(0b00001101)     // Включена тренировка с индикацией цели в цифрах 0-1023
-//               || requestButtonEnd(0b00011101)
-//                   || requestButtonEnd(0b00011011)
-//                       || requestButtonEnd(0b00011001)
-//                           || requestButtonEnd(0b00011111)) 
 
    // Функция проверяет нажата ли одна из комбинаций кнопок, для работы тренировки аккумуляторов
    if (openSmartTrening()) {  
@@ -98,6 +90,8 @@ bool treningAKB()
           // Если аккумулятор разрядился до нужного уровня
           if (analogRead(A0) < lowChardg) {
               digitalWrite(LED_BUILTIN, LOW);
+              tm.displayText("Pause");
+              delay(5000);
           }
       }
       // Блок отклюения зарядки аккумулятора по достижению напряжения их переменной hightChardg
@@ -107,7 +101,7 @@ bool treningAKB()
           // если время финиша меньше, чем время старта, значит очередной отсчёт ещё не закончен, заканчиваем его
           if (milisecForSmartChardgeFinish < milisecForSmartChardgeStart) {
               milisecForSmartChardgeFinish = millis();
-              int rezult = (int)(milisecForSmartChardgeFinish - milisecForSmartChardgeStart) / 1000;
+              int rezult = (int)((milisecForSmartChardgeFinish - milisecForSmartChardgeStart) / 1000);
               unshift(rezult, mAh, 5);
           }
               
@@ -115,6 +109,8 @@ bool treningAKB()
           if ((analogRead(A1) > hightChardg && digitalRead(9)) 
               || (analogRead(A1) > hightChardg && buttonArray[4])) {
             digitalWrite(LED_BUILTIN, HIGH);
+            tm.displayText("Pause");
+            delay(5000);
           }
       }
 

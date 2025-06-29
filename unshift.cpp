@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "unshift.h"  // Подключаем заголовочный файл
+#include "global.h"
 
 // Функция сдвигает все элементы массива вправо и добавляет один элемент в начало массива
 void unshift(int el, int* array, char size)
@@ -16,11 +17,16 @@ void unshift(int el, int* array, char size)
 // Если функция возвращает true, тренировку можно заканчивать
 bool unshift(int* array, int size)
 {
+    if (ticChargeZero > 20) {
+        ticChargeZero = 0;
+        return true;
+    }
+
     for (char i = 0; i < size; i++) {
         if (array[i] == 0) return false;
     }
 
     if ((array[4]*100/array[0])-100 > 5) return false;
-
+    
     return true;
 }

@@ -96,6 +96,10 @@ bool treningAKB()
           if (milisecForSmartChardgeFinish < milisecForSmartChardgeStart) {
               milisecForSmartChardgeFinish = millis();
               int rezult = (int)((milisecForSmartChardgeFinish - milisecForSmartChardgeStart) / 1000);
+              
+              // здесь добавляеся или отнимается счётчик нулевых разрядов
+              if (rezult < 2) ticChargeZero++;
+            //   Serial.println(ticChargeZero);
               unshift(rezult, mAh, 5);
           }
               
@@ -115,7 +119,6 @@ bool treningAKB()
           if (buttonArray[4]) 
               buttonClosed(4);
           else {
-            //   buttonClosed(0);
               buttonClosed(1);
               buttonClosed(2);
               buttonClosed(3);

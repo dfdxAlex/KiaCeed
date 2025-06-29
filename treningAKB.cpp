@@ -39,20 +39,15 @@ bool treningAKB()
    // Функция проверяет нажата ли одна из комбинаций кнопок, для работы тренировки аккумуляторов
    if (openSmartTrening()) {  
       // Показывать значение заряда-разряда в миливольтах если нажаты все 4 кнопки
-      if (requestButtonEnd(0b00001111) 
-          || requestButtonEnd(0b00001011) 
-              || requestButtonEnd(0b00001101)
-                  || requestButtonEnd(0b00011111) 
-                      || requestButtonEnd(0b00011011) 
-                          || requestButtonEnd(0b00011101)) 
+        if (!requestButtonEnd(0b00001001) && !requestButtonEnd(0b00011001))
               {
           // Блок индикации заряда-разряда. Используется если в смарт тренировке нажаты S2 и S3 
           // Если наался процесс разрядки аккумулятора, то берем напряжение с входа 0, этот 
           // вход подключен к разрядному резистору
           int localAnalogRead = 0;
           if (digitalRead(LED_BUILTIN) == HIGH) {
-              localAnalogRead = analogRead(A0);  // Читаем один раз данные с входа
-              if (lockFlagDown > localAnalogRead) lockFlagDown = localAnalogRead; // Если прочитанное значение меньше предыдущего, то тогда уменьшаем значение
+              lockFlagDown = analogRead(A0);  // Читаем один раз данные с входа
+            //   if (lockFlagDown > localAnalogRead) lockFlagDown = localAnalogRead; // Если прочитанное значение меньше предыдущего, то тогда уменьшаем значение
               if (requestButtonEnd(0b00001111) || requestButtonEnd(0b00011111)) {
                   sprintf(outString, "%01d.%03d%04s", intFracPart(intFracPart(lockFlagDown)), intFracPart(intFracPart(lockFlagDown), true), "    ");
               }
@@ -66,8 +61,9 @@ bool treningAKB()
           // Если выключен выход 13, значит не разряжаем, значит используем напряжение с выхода 1
           // Этот выход подключен а аккумулятору когда он не РАзряжается
           if (digitalRead(LED_BUILTIN) == LOW) {
-              localAnalogRead = analogRead(A1);   // Читаем один раз данные с входа
-              if (lockFlagUp < localAnalogRead) lockFlagUp = localAnalogRead; // Если прочитанное значение больше предыдущего, то тогда увеличиваем значение
+            //   localAnalogRead = analogRead(A1);   // Читаем один раз данные с входа
+            lockFlagUp = analogRead(A1);   // Читаем один раз данные с входа
+            //   if (lockFlagUp < localAnalogRead) lockFlagUp = localAnalogRead; // Если прочитанное значение больше предыдущего, то тогда увеличиваем значение
               if (requestButtonEnd(0b00001111) || requestButtonEnd(0b00011111)) {
                   sprintf(outString, "%01d.%03d%04s", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true), "    ");
               }
@@ -90,8 +86,6 @@ bool treningAKB()
           // Если аккумулятор разрядился до нужного уровня
           if (analogRead(A0) < lowChardg) {
               digitalWrite(LED_BUILTIN, LOW);
-              tm.displayText("Pause");
-              delay(5000);
           }
       }
       // Блок отклюения зарядки аккумулятора по достижению напряжения их переменной hightChardg
@@ -109,8 +103,6 @@ bool treningAKB()
           if ((analogRead(A1) > hightChardg && digitalRead(9)) 
               || (analogRead(A1) > hightChardg && buttonArray[4])) {
             digitalWrite(LED_BUILTIN, HIGH);
-            tm.displayText("Pause");
-            delay(5000);
           }
       }
 
@@ -123,7 +115,7 @@ bool treningAKB()
           if (buttonArray[4]) 
               buttonClosed(4);
           else {
-              buttonClosed(0);
+            //   buttonClosed(0);
               buttonClosed(1);
               buttonClosed(2);
               buttonClosed(3);

@@ -4,6 +4,6 @@
 // Описание функции
 void listingmAh();
 bool openSmartTrening();
-bool viewArray();
+// bool viewArray();
 
 #endif

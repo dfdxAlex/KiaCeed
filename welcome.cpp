@@ -8,7 +8,7 @@ void welcome()
 {
         for (char i=2; i<10; i++) {
         if (i % 2 == 0)
-            tm.displayText("V-2.6   ");
+            tm.displayText("V-2.61  ");
         else
             tm.displayText("READY   ");
         delay(800);

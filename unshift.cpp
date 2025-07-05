@@ -26,7 +26,7 @@ bool unshift(int* array, int size)
         if (array[i] == 0) return false;
     }
 
-    if ((array[4]*100/array[0])-100 > 5) return false;
+    if ((array[0]*100/array[4])-100 > 5) return false;
     
     return true;
 }

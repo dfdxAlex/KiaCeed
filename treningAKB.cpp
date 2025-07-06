@@ -10,28 +10,30 @@
 // Функция тренирует акб
 bool treningAKB()
 {
+  int rezult;
+
   if (!buttonArray[0]) {
       digitalWrite(LED_BUILTIN, LOW);  // Зарядка акамулятора
       return false;
   }
 
-  if (requestButtonEnd(0b00000001)) { // Сюда заходим если нажата только S1
+//   if (requestButtonEnd(0b00000001)) { // Сюда заходим если нажата только S1
 
-      // Режим заряд/разряд по времени
-      // Здесь только процесс сравнивания с текущим состоянием работы одного из режимов заряд/разряд и если времени прошло больше заданного, то переключаемся
-      if (timeAccumulator > tChardge)                     // Если превышено время разрядки
-          if (digitalRead(LED_BUILTIN) != HIGH) {      // Если ещё не включили разрядку
-              digitalWrite(LED_BUILTIN, HIGH);         // Включить разрядку
-              milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
-              timeAccumulator = 0;                     // Обнулить аккумулятор
-          }
-      if (timeAccumulator > tWork)                  // Если превышено время зарядки
-          if (digitalRead(LED_BUILTIN) != LOW) {       // Если ещё не включена зарядка
-              digitalWrite(LED_BUILTIN, LOW);          // Включить зарядку
-              milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
-              timeAccumulator = 0;                     // Обнулить аккумулятор
-          }
-  }
+//       // Режим заряд/разряд по времени
+//       // Здесь только процесс сравнивания с текущим состоянием работы одного из режимов заряд/разряд и если времени прошло больше заданного, то переключаемся
+//       if (timeAccumulator > tChardge)                  // Если превышено время разрядки
+//           if (digitalRead(LED_BUILTIN) != HIGH) {      // Если ещё не включили разрядку
+//               digitalWrite(LED_BUILTIN, HIGH);         // Включить разрядку
+//               milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
+//               timeAccumulator = 0;                     // Обнулить аккумулятор
+//           }
+//       if (timeAccumulator > tWork)                     // Если превышено время зарядки
+//           if (digitalRead(LED_BUILTIN) != LOW) {       // Если ещё не включена зарядка
+//               digitalWrite(LED_BUILTIN, LOW);          // Включить зарядку
+//               milisek = millis();                      // Обнуление переменной хранящей контрольную точку таймера
+//               timeAccumulator = 0;                     // Обнулить аккумулятор
+//           }
+//   }
   
   // Режим заряд/разряд по уровням напряжения
   // Если включена умная тренировка hightChardg
@@ -47,7 +49,6 @@ bool treningAKB()
           int localAnalogRead = 0;
           if (digitalRead(LED_BUILTIN) == HIGH) {
               lockFlagDown = analogRead(A0);  // Читаем один раз данные с входа
-            //   if (lockFlagDown > localAnalogRead) lockFlagDown = localAnalogRead; // Если прочитанное значение меньше предыдущего, то тогда уменьшаем значение
               if (requestButtonEnd(0b00001111) || requestButtonEnd(0b00011111)) {
                   sprintf(outString, "%01d.%03d%04s", intFracPart(intFracPart(lockFlagDown)), intFracPart(intFracPart(lockFlagDown), true), "    ");
               }
@@ -61,9 +62,7 @@ bool treningAKB()
           // Если выключен выход 13, значит не разряжаем, значит используем напряжение с выхода 1
           // Этот выход подключен а аккумулятору когда он не РАзряжается
           if (digitalRead(LED_BUILTIN) == LOW) {
-            //   localAnalogRead = analogRead(A1);   // Читаем один раз данные с входа
             lockFlagUp = analogRead(A1);   // Читаем один раз данные с входа
-            //   if (lockFlagUp < localAnalogRead) lockFlagUp = localAnalogRead; // Если прочитанное значение больше предыдущего, то тогда увеличиваем значение
               if (requestButtonEnd(0b00001111) || requestButtonEnd(0b00011111)) {
                   sprintf(outString, "%01d.%03d%04s", intFracPart(intFracPart(lockFlagUp)), intFracPart(intFracPart(lockFlagUp), true), "    ");
               }
@@ -95,7 +94,7 @@ bool treningAKB()
           // если время финиша меньше, чем время старта, значит очередной отсчёт ещё не закончен, заканчиваем его
           if (milisecForSmartChardgeFinish < milisecForSmartChardgeStart) {
               milisecForSmartChardgeFinish = millis();
-              int rezult = (int)((milisecForSmartChardgeFinish - milisecForSmartChardgeStart) / 1000);
+              rezult = (int)((milisecForSmartChardgeFinish - milisecForSmartChardgeStart) / 1000);
               
               // здесь добавляеся или отнимается счётчик нулевых разрядов
               if (rezult < 2) ticChargeZero++;
@@ -116,14 +115,18 @@ bool treningAKB()
           // При выключенных кнопках реле отключится и подключит зарядное, которое зарядит аккумулятор
           // и само отключится от него.
           unshift(0, mAh, 5);
-          if (buttonArray[4]) 
+          if (buttonArray[4]) {
               buttonClosed(4);
+              unshift();
+          }
           else {
               buttonClosed(1);
               buttonClosed(2);
               buttonClosed(3);
+              unshift();
+              tChardge = 60000;
+              tWork = 60000;
           }
-          
       }
   }
 }

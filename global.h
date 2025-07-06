@@ -30,6 +30,9 @@ extern int lowChardg;
 extern int hightChardg;   
 
 extern int mAh[5];
-extern int ticChargeZero;
+extern char ticChargeZero;
 extern unsigned long milisecForSmartChardgeStart;
 extern unsigned long milisecForSmartChardgeFinish;
+
+extern unsigned long propertyForDischargeTime;
+extern bool isBatteryBad;

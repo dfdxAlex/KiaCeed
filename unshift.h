@@ -4,5 +4,7 @@
 // Описание функции
 void unshift(int el, int* array, char size);
 bool unshift(int* array, int size);
+void unshift();
+long unshift(int* array);
 
 #endif

@@ -19,6 +19,7 @@ bool unshift(int* array, int size)
 {
     if (ticChargeZero > 20) {
         ticChargeZero = 0;
+        isBatteryBad = true;
         return true;
     }
 
@@ -29,4 +30,22 @@ bool unshift(int* array, int size)
     if ((array[0]*100/array[4])-100 > 5) return false;
     
     return true;
+}
+
+// Функция без параметров обнуляет массив
+void unshift()
+{
+    for (char i = 0; i < 5; i++) {
+        mAh[i] = 0;
+    }
+}
+
+
+long unshift(int* array)
+{
+    long rezult = 0;
+    for (char i = 0; i < 5; i++) {
+        rezult += mAh[i];
+    }
+    return (long)rezult;
 }
